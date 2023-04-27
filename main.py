@@ -3,23 +3,66 @@ from aiogram import Bot, Dispatcher, executor, types
 from datetime import datetime
 import random
 import requests
+from data import db_session
+from data.users import User
+from data.links import Links
 from config import BOT_TOKEN
-
+db_session.global_init("db/bot_data.db")
 NASA_API_KEY = 'fNkARpRKqsFjsvNwX90bIsEjdseRUp4GfhTdO5Qx'
 img_request = 'https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos'
 array = open('img.marsLisr', mode='a')
-
+DB_SESSION = db_session.create_session()
 bot = Bot(token=BOT_TOKEN, parse_mode=types.ParseMode.HTML)
 dp = Dispatcher(bot)
 
 
+def user_exist(uid):
+    return len(list(DB_SESSION.query(User).filter(User.uid == uid))) == 1
+
+
+def register_user(uid):
+    if not user_exist(uid):
+        user = User(uid=uid)
+        DB_SESSION.add(user)
+        DB_SESSION.commit()
+
+
+def link_exist(key):
+    return len(list(DB_SESSION.query(Links).filter(Links.key == key))) >= 1
+
+
+def add_link(key, link):
+    link = Links(key=key, link=link, asks=1)
+    DB_SESSION.add(link)
+    DB_SESSION.commit()
+
+
+def plus_link(key):
+    for i in DB_SESSION.query(Links).filter(Links.key == key):
+        i.asks += 1
+    DB_SESSION.commit()
+
+
+def get_asks(key):
+    return DB_SESSION.query(Links).filter(Links.key == key).first().asks
+
+
+def get_link(key):
+    return DB_SESSION.query(Links).filter(Links.key == key).first().link
+
+
+def jodict(di):
+    return ''.join('{}{}'.format(key, val) for key, val in di.items())
+
+
 @dp.message_handler(commands=['start'])
 async def _start(message: types.Message):
+    register_user(message.chat.id)
     await message.answer('''
-To start help command, use:
-/en - on english
-/ru - on russian
-/bk - on bashkort.''')
+            To start help command, use:
+            /en - on english
+            /ru - on russian
+            /bk - on bashkort.''')
 
 
 @dp.message_handler(commands=['ru'])
@@ -81,21 +124,35 @@ def get_nice_img_(date_now, date=''):
 
     d = datetime.today().strftime('%Y-%m-%d') if date_now else date if date != '' else '2001-01-01'
     # Get the image data:
-
-    apod = nasa.picture_of_the_day(date=d, hd=True)
-    print(apod)
-    return f"<b>{apod['title']}</b> \n <b>Date:</b> {apod['date']} \n \n {apod['explanation']} \n {apod['hdurl']}"
+    if link_exist(d):
+        plus_link(d)
+        rez = get_link(d) + f"\n CALLS: {get_asks(d)}"
+    else:
+        apod = nasa.picture_of_the_day(date=d, hd=True)
+        rez = f"<b>{apod['title']}</b> \n <b>Date:</b> {apod['date']} \n \n {apod['explanation']} \n {apod['hdurl']}"
+        add_link(d, rez)
+    return rez
 
 
 def get_my_mars_(params):
+    par = jodict(params)
+    if link_exist(par):
+        rez = get_link(par)
+        plus_link(par)
+        return rez
     response = requests.get(img_request, params=params)
     if response:
         json_response = response.json()
         if json_response:
-            return 'Camera: ' + json_response['photos'][0]['camera']['full_name'] + '\n' + 'Day: ' \
+            rez = 'Camera: ' + json_response['photos'][0]['camera']['full_name'] + '\n' + 'Day: ' \
                    + str(json_response['photos'][0]['sol']) + '\n' + json_response['photos'][0]['img_src']
+            add_link(par, rez)
         else:
-            return 'Sorry, response is empty'
+            rez = 'Sorry, response is empty'
+    else:
+        rez = 'Sorry, response is empty'
+
+    return rez
 
 
 @dp.message_handler(commands=['mars', 'rover', 'rovers'])
@@ -103,15 +160,17 @@ async def mars_(message: types.Message):
     await message.answer('Wait...')
     sol = random.randint(0, 1722)
     paramsi = {'sol': sol, 'api_key': NASA_API_KEY}
-    print(get_my_mars_(paramsi))
-    await message.answer(get_my_mars_(paramsi))
+    rez = get_my_mars_(paramsi)
+    print(rez)
+    await message.answer(rez)
 
 
 @dp.message_handler(commands=['today', 'Apod', 'apod'])
 async def cmd_start(message: types.Message):
     await message.answer('Wait...')
-    print(get_nice_img_(True))
-    await message.answer(get_nice_img_(True))
+    rez = get_nice_img_(True)
+    print(rez)
+    await message.answer(rez)
 
 
 @dp.message_handler()

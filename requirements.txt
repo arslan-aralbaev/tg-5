@@ -1,0 +1,4 @@
+pandas==2.0.1
+SQLAlchemy==2.0.11
+aiogram==2.25.1
+nasapy==0.2.7
