@@ -73,7 +73,8 @@ async def _start(message: types.Message):
             To start help command, use:
             /en - on english
             /ru - on russian
-            /bk - on bashkort.''')
+            /bk - on bashkort
+            /fr - on french.''')
 
 
 @dp.message_handler(commands=['ru'])
@@ -90,7 +91,9 @@ async def ru_start(message: types.Message):
     Для этого нужно послать команду /today, /apod, /Apod.
 - присылать изображение или фотоснимок из нашей Вселенной, а также краткое пояснение к нему,
  написанное профессиональным астрономом конкретного дня.
-    Для этого нужно послать сообщения "apod:год-месяц-день".''')
+    Для этого нужно послать сообщения "apod:год-месяц-день".
+- присылать самый популярный запрос среди пользователей
+    Для этого пошлите команду /popular''')
 
 
 @dp.message_handler(commands=['en'])
@@ -108,6 +111,8 @@ The bot can:
 - send an image or photograph from our universe, as well as a brief explanation to it
 , written by a professional astronomer of a particular day.
     To do this, you need to send messages "apod:year-month-day".
+- send the most popular request among users
+ To do this, send the command /popular
 ''')
 
 
@@ -126,6 +131,28 @@ async def bk_start(message: types.Message):
 - Беҙҙең Ғаләмдән һүрәт йәки фотоһүрәт ебәрергә, шулай уҡ уға ҡыҫҡаса аңлатма ебәрергә,
  уны профессиональ астроном конкрет көн яҙған.
 Бының өсөн "apod:йыл-ай-көн"тигән хәбәрҙәр ебәрергә кәрәк.
+ ҡулланыусылар араһында иң популяр запрос ебәрергә
+ Бының өсөн команда ебәрегеҙ /popular
+''')
+
+
+@dp.message_handler(commands=['fr'])
+async def bk_start(message: types.Message):
+    await message.answer('''
+Bonjour, ce bot est nécessaire pour obtenir une photo de l'API de la NASA.
+Le bot peut:
+- envoyer une photo aléatoire d'un Rover martien.
+ Pour ce faire, vous devez envoyer la commande / mars, /rover, / rovers.
+- envoyer une photo d'un jour particulier d'un Rover martien.
+ Pour ce faire, vous devez envoyer des messages "mars: jour (disponible 1700 jours)".
+- envoyer une image ou une photo actuelle de notre Univers,
+ et aussi une brève explication écrite par un astronome professionnel.
+ Pour ce faire, vous devez envoyer la commande / today, / apod, / Apod.
+- envoyer une image ou une photo de notre Univers, ainsi qu'une brève explication,
+ écrit par un astronome professionnel.
+ Pour ce faire, vous devez envoyer des messages "apod: année-mois-jour".
+- envoyer la demande la plus populaire parmi les utilisateurs
+ Pour ce faire, envoyez la commande / popular
 ''')
 
 
