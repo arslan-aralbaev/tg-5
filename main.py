@@ -7,6 +7,7 @@ from data import db_session
 from data.users import User
 from data.links import Links
 from config import BOT_TOKEN
+from datetime import datetime, timedelta
 db_session.global_init("db/bot_data.db")
 NASA_API_KEY = 'fNkARpRKqsFjsvNwX90bIsEjdseRUp4GfhTdO5Qx'
 img_request = 'https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos'
@@ -14,7 +15,42 @@ array = open('img.marsLisr', mode='a')
 DB_SESSION = db_session.create_session()
 bot = Bot(token=BOT_TOKEN, parse_mode=types.ParseMode.HTML)
 dp = Dispatcher(bot)
+RUN = True
 admins = ["1428507394", "1525377107"]
+commands = ["/en", "/ru", "/bk", "/fr", "/mars", "/rover", "/rovers", "/today", "/apod", "/Apod", "/popular",
+            "марс:12", "adop:2001-01-01"]
+
+
+class Timer:
+    def __init__(self, tick):
+        self.tick, self.last = tick, datetime.now()
+
+    def tk(self):
+        if (datetime.now() - self.last) > timedelta(seconds=self.tick):
+            self.last = datetime.now()
+            return True
+        return False
+
+
+def distance(a, b):
+    n, m = len(a), len(b)
+    if n > m:
+        a, b = b, a
+        n, m = m, n
+    current_row = range(n + 1)
+    for i in range(1, m + 1):
+        previous_row, current_row = current_row, [i] + [0] * n
+        for j in range(1, n + 1):
+            add, delete, change = previous_row[j] + 1, current_row[j - 1] + 1, previous_row[j - 1]
+            if a[j - 1] != b[i - 1]:
+                change += 1
+            current_row[j] = min(add, delete, change)
+    return current_row[n]
+
+
+def nearest_com(com):
+    global distance, commands
+    return f"Do you mean {sorted(commands, key=lambda x: distance(x, com))[0]} ?"
 
 
 def user_exist(uid):
@@ -215,6 +251,7 @@ async def cmd_start(message: types.Message):
 async def finish(message: types.Message):
     if message.chat.id in admins:
         await bot.send_message(message.chat.id, "goodbuy")
+        RUN = False
         exit()
 
 
@@ -241,6 +278,14 @@ async def welcome(my_message):
             await my_message.answer(f'!!!Error!!! \n {ex}')
     else:
         await my_message.answer('Неправильный формат ввода.')
+        await bot.send_message(message.chat.id, nearest_com(message.text))
 
 
-executor.start_polling(dp, skip_updates=True)
+if __name__ == "__main__":
+    timeC = Timer(10)
+    while RUN:
+        if timeC.tk():
+            try:
+                executor.start_polling(dp, skip_updates=True)
+            except Exception as ex:
+                print(ex)
