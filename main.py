@@ -264,20 +264,24 @@ async def popular(message: types.Message):
 async def welcome(my_message):
     await my_message.answer('Wait...')
     message = my_message.text.split(':')
-    if message[0].lower() == 'марс':
-        if abs(int(message[1])) < 1700:
-            sol = abs(int(message[1]))
-            paramsi = {'sol': sol, 'api_key': NASA_API_KEY}
-            await my_message.answer(get_my_mars_(paramsi))
+    try:
+        if message[0].lower() == 'марс':
+            if abs(int(message[1])) < 1700:
+                sol = abs(int(message[1]))
+                paramsi = {'sol': sol, 'api_key': NASA_API_KEY}
+                await my_message.answer(get_my_mars_(paramsi))
+            else:
+                await my_message.answer('В этот день снимка нет :(')
+        elif message[0].lower() == 'apod':
+            try:
+                await my_message.answer(get_nice_img_(False, message[1]))
+            except Exception as ex:
+                await my_message.answer(f'!!!Error!!! \n {ex}')
         else:
-            await my_message.answer('В этот день снимка нет :(')
-    elif message[0].lower() == 'apod':
-        try:
-            await my_message.answer(get_nice_img_(False, message[1]))
-        except Exception as ex:
-            await my_message.answer(f'!!!Error!!! \n {ex}')
-    else:
-        await my_message.answer('Неправильный формат ввода.')
+            await my_message.answer('Неправильный формат ввода.')
+            await bot.send_message(my_message.chat.id, nearest_com(my_message.text))
+    except Exception as ex:
+        await my_message.answer(f'!!!Error!!! \n {ex}')
         await bot.send_message(my_message.chat.id, nearest_com(my_message.text))
 
 
