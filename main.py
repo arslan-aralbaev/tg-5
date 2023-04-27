@@ -278,7 +278,7 @@ async def welcome(my_message):
             await my_message.answer(f'!!!Error!!! \n {ex}')
     else:
         await my_message.answer('Неправильный формат ввода.')
-        await bot.send_message(message.chat.id, nearest_com(message.text))
+        await bot.send_message(my_message.chat.id, nearest_com(my_message.text))
 
 
 if __name__ == "__main__":
