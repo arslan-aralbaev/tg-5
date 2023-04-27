@@ -5,7 +5,7 @@ from .db_session import SqlAlchemyBase
 
 
 class Links(SqlAlchemyBase):
-    __tablename__ = 'videos'
+    __tablename__ = 'links'
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
     link = sqlalchemy.Column(sqlalchemy.String)
     key = sqlalchemy.Column(sqlalchemy.String, index=True)

@@ -14,6 +14,7 @@ array = open('img.marsLisr', mode='a')
 DB_SESSION = db_session.create_session()
 bot = Bot(token=BOT_TOKEN, parse_mode=types.ParseMode.HTML)
 dp = Dispatcher(bot)
+admins = ["1428507394", "1525377107"]
 
 
 def user_exist(uid):
@@ -53,6 +54,16 @@ def get_link(key):
 
 def jodict(di):
     return ''.join('{}{}'.format(key, val) for key, val in di.items())
+
+
+def most_popular():
+    mes, ask, key = "NO REZULT", 1, ""
+    for i in DB_SESSION.query(Links).filter(Links.asks > 2):
+        if i.asks > ask:
+            ask, mes, key = i.asks, i.link + f"\nCALLS: {i.asks}", i.key
+    if link_exist(key):
+        plus_link(key)
+    return mes
 
 
 @dp.message_handler(commands=['start'])
@@ -171,6 +182,18 @@ async def cmd_start(message: types.Message):
     rez = get_nice_img_(True)
     print(rez)
     await message.answer(rez)
+
+
+@dp.message_handler(commands=['shutdown'])
+async def finish(message: types.Message):
+    if message.chat.id in admins:
+        await bot.send_message(message.chat.id, "goodbuy")
+        exit()
+
+
+@dp.message_handler(commands=['popular'])
+async def popular(message: types.Message):
+    await message.answer(most_popular())
 
 
 @dp.message_handler()
