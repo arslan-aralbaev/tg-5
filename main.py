@@ -139,7 +139,7 @@ def get_my_mars_(params):
     if link_exist(par):
         rez = get_link(par)
         plus_link(par)
-        return rez
+        return rez + f"\n CALLS: {get_asks(par)}"
     response = requests.get(img_request, params=params)
     if response:
         json_response = response.json()
