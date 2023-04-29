@@ -1,6 +1,5 @@
 import nasapy
 from aiogram import Bot, Dispatcher, executor, types
-from datetime import datetime
 import random
 import requests
 from data import db_session
@@ -249,7 +248,7 @@ async def cmd_start(message: types.Message):
 
 @dp.message_handler(commands=['shutdown'])
 async def finish(message: types.Message):
-    if message.chat.id in admins:
+    if str(message.chat.id) in admins:
         await bot.send_message(message.chat.id, "goodbuy")
         RUN = False
         exit()
