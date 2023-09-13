@@ -202,7 +202,7 @@ def get_nice_img_(date_now, date=''):
         rez = get_link(d) + f"\n CALLS: {get_asks(d)}"
     else:
         apod = nasa.picture_of_the_day(date=d, hd=True)
-        rez = f"<b>{apod['title']}</b> \n <b>Date:</b> {apod['date']} \n \n {apod['explanation']} \n {apod['hdurl']}"
+        rez = f"<b>{apod['title']}</b> \n <b>Date:</b> {apod['date']} \n \n {apod['explanation']} \n {apod['url']}"
         add_link(d, rez)
     return rez
 
@@ -289,6 +289,6 @@ if __name__ == "__main__":
     while RUN:
         if timeC.tk():
             try:
-                executor.start_polling(dp, skip_updates=True)
+                executor.start_polling(dp, skip_updates=False)
             except Exception as ex:
                 print(ex)
